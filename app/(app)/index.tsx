@@ -1,5 +1,5 @@
 import CollapsibleSection from "@/components/CollapsibleSection";
-import { useAuth } from "@clerk/clerk-expo";
+import { colors } from "@/constants/theme";
 import { useRouter } from "expo-router";
 import {
   ScrollView,
@@ -46,11 +46,9 @@ const days = [
 ];
 
 export default function Home() {
-  const { signOut } = useAuth();
   const router = useRouter();
 
   async function handleSignOut() {
-    await signOut();
     router.replace("/sign-in");
   }
 
@@ -97,7 +95,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#727272",
+    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -113,14 +111,14 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111",
+    color: colors.text,
   },
   signOut: {
-    color: "#e53e3e",
+    color: colors.danger,
     fontSize: 14,
   },
   card: {
-    backgroundColor: "#f7f7f7",
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -128,12 +126,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111",
+    color: colors.text,
     marginBottom: 6,
   },
   cardBody: {
     fontSize: 14,
-    color: "#555",
+    color: colors.muted,
     lineHeight: 20,
   },
   exerciseList: {
@@ -149,10 +147,10 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#111",
+    backgroundColor: colors.accent2,
   },
   exerciseText: {
     fontSize: 14,
-    color: "#333",
+    color: colors.text,
   },
 });

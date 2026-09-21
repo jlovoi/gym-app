@@ -1,3 +1,4 @@
+import { colors } from "@/constants/theme";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -30,7 +31,7 @@ export default function CollapsibleSection({
 
 const styles = StyleSheet.create({
   section: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -44,10 +45,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#111",
+    color: colors.text,
   },
   chevron: {
     fontSize: 12,
-    color: "#888",
+    color: colors.muted,
   },
 });

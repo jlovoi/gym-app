@@ -1,6 +1,7 @@
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { colors } from "@/constants/theme";
 import { Tabs } from "expo-router";
 import { StyleSheet } from "react-native";
 
@@ -20,7 +21,7 @@ export default function AppLayout() {
             <MaterialCommunityIcons
               name="weight-lifter"
               size={24}
-              color={focused ? "#27f561" : "black"}
+              color={focused ? colors.accent : colors.muted}
             />
           ),
         }}
@@ -32,7 +33,7 @@ export default function AppLayout() {
             <FontAwesome5
               name="calendar-check"
               size={24}
-              color={focused ? "#27f561" : "black"}
+              color={focused ? colors.accent : colors.muted}
             />
           ),
         }}
@@ -44,7 +45,7 @@ export default function AppLayout() {
             <Ionicons
               name="chatbox-ellipses"
               size={24}
-              color={focused ? "#27f561" : "black"}
+              color={focused ? colors.accent : colors.muted}
             />
           ),
         }}
@@ -56,7 +57,7 @@ export default function AppLayout() {
             <Ionicons
               name="person"
               size={24}
-              color={focused ? "#27f561" : "black"}
+              color={focused ? colors.accent : colors.muted}
             />
           ),
         }}
@@ -67,10 +68,11 @@ export default function AppLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: "#a19e9d",
-    borderTopColor: "#e5e5e5",
+    backgroundColor: colors.surface,
+    borderTopColor: colors.border,
     borderTopWidth: 1,
     height: 64,
     paddingTop: 8,
+    paddingBottom: 12,
   },
 });

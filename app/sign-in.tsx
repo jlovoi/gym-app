@@ -1,4 +1,3 @@
-import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -13,7 +12,6 @@ import {
 } from "react-native";
 
 export default function SignIn() {
-  const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -22,12 +20,9 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   async function handleSignIn() {
-    if (!isLoaded) return;
     setError("");
     setLoading(true);
     try {
-      const result = await signIn.create({ identifier: email, password });
-      await setActive({ session: result.createdSessionId });
       router.replace("/(app)");
     } catch (err: any) {
       setError(err.errors?.[0]?.message ?? "Sign in failed. Please try again.");

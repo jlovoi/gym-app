@@ -1,4 +1,3 @@
-import { useSignUp } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -13,7 +12,6 @@ import {
 } from "react-native";
 
 export default function SignUp() {
-  const { signUp, setActive, isLoaded } = useSignUp();
   const router = useRouter();
 
   const [firstName, setFirstName] = useState("");
@@ -26,12 +24,9 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
 
   async function handleSignUp() {
-    if (!isLoaded) return;
     setError("");
     setLoading(true);
     try {
-      await signUp.create({ emailAddress: email, password, firstName, lastName });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: any) {
       setError(err.errors?.[0]?.message ?? "Sign up failed. Please try again.");
@@ -41,22 +36,9 @@ export default function SignUp() {
   }
 
   async function handleVerify() {
-    if (!isLoaded) return;
     setError("");
     setLoading(true);
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-      await setActive({ session: result.createdSessionId });
-      await fetch(`${process.env.EXPO_PUBLIC_API_URL}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clerkId: result.createdUserId,
-          firstName,
-          lastName,
-          email,
-        }),
-      });
       router.replace("/(app)");
     } catch (err: any) {
       setError(err.errors?.[0]?.message ?? "Verification failed. Please try again.");
