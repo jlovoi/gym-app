@@ -18,8 +18,6 @@ export default function SignUp() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"credentials" | "verify">("credentials");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +25,7 @@ export default function SignUp() {
     setError("");
     setLoading(true);
     try {
-      setStep("verify");
+      router.replace("/(app)");
     } catch (err: any) {
       setError(err.errors?.[0]?.message ?? "Sign up failed. Please try again.");
     } finally {
@@ -35,119 +33,59 @@ export default function SignUp() {
     }
   }
 
-  async function handleVerify() {
-    setError("");
-    setLoading(true);
-    try {
-      router.replace("/(app)");
-    } catch (err: any) {
-      setError(err.errors?.[0]?.message ?? "Verification failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <View style={styles.inner}>
-        {step === "credentials" ? (
-          <>
-            <Text style={styles.title}>Create account</Text>
+        <>
+          <Text style={styles.title}>Create account</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="First name"
-              placeholderTextColor="#888"
-              autoCapitalize="words"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
+          <TextInput
+            style={styles.input}
+            placeholder="First name"
+            placeholderTextColor="#888"
+            autoCapitalize="words"
+            value={firstName}
+            onChangeText={setFirstName}
+          />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Last name"
-              placeholderTextColor="#888"
-              autoCapitalize="words"
-              value={lastName}
-              onChangeText={setLastName}
-            />
+          <TextInput
+            style={styles.input}
+            placeholder="Last name"
+            placeholderTextColor="#888"
+            autoCapitalize="words"
+            value={lastName}
+            onChangeText={setLastName}
+          />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#888"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#888"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#888"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#888"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSignUp}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Continue</Text>
-              )}
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Continue</Text>}
+          </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.replace("/sign-in")}>
-              <Text style={styles.link}>Already have an account? Sign in</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <Text style={styles.title}>Check your email</Text>
-            <Text style={styles.subtitle}>
-              We sent a verification code to {email}
-            </Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Verification code"
-              placeholderTextColor="#888"
-              keyboardType="number-pad"
-              value={code}
-              onChangeText={setCode}
-              autoFocus
-            />
-
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleVerify}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Verify email</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setStep("credentials")}>
-              <Text style={styles.link}>Go back</Text>
-            </TouchableOpacity>
-          </>
-        )}
+          <TouchableOpacity onPress={() => router.replace("/sign-in")}>
+            <Text style={styles.link}>Already have an account? Sign in</Text>
+          </TouchableOpacity>
+        </>
       </View>
     </KeyboardAvoidingView>
   );

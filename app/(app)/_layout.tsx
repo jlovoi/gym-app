@@ -18,11 +18,7 @@ export default function AppLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <MaterialCommunityIcons
-              name="weight-lifter"
-              size={24}
-              color={focused ? colors.accent : colors.muted}
-            />
+            <MaterialCommunityIcons name="weight-lifter" size={24} color={focused ? colors.accent : colors.muted} />
           ),
         }}
       />
@@ -30,11 +26,7 @@ export default function AppLayout() {
         name="classes"
         options={{
           tabBarIcon: ({ focused }) => (
-            <FontAwesome5
-              name="calendar-check"
-              size={24}
-              color={focused ? colors.accent : colors.muted}
-            />
+            <FontAwesome5 name="calendar-check" size={24} color={focused ? colors.accent : colors.muted} />
           ),
         }}
       />
@@ -42,11 +34,7 @@ export default function AppLayout() {
         name="chat"
         options={{
           tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="chatbox-ellipses"
-              size={24}
-              color={focused ? colors.accent : colors.muted}
-            />
+            <Ionicons name="chatbox-ellipses" size={24} color={focused ? colors.accent : colors.muted} />
           ),
         }}
       />
@@ -54,11 +42,7 @@ export default function AppLayout() {
         name="profile"
         options={{
           tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="person"
-              size={24}
-              color={focused ? colors.accent : colors.muted}
-            />
+            <Ionicons name="person" size={24} color={focused ? colors.accent : colors.muted} />
           ),
         }}
       />

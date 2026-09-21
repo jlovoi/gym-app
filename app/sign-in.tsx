@@ -32,10 +32,7 @@ export default function SignIn() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <View style={styles.inner}>
         <Text style={styles.title}>Welcome back</Text>
 
@@ -60,16 +57,8 @@ export default function SignIn() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleSignIn}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Sign in</Text>
-          )}
+        <TouchableOpacity style={styles.button} onPress={handleSignIn} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign in</Text>}
         </TouchableOpacity>
 
         <Link href="/sign-up" asChild>

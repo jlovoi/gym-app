@@ -8,19 +8,12 @@ type Props = {
   children: React.ReactNode;
 };
 
-export default function CollapsibleSection({
-  title,
-  defaultOpen = true,
-  children,
-}: Props) {
+export default function CollapsibleSection({ title, defaultOpen = true, children }: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
     <View style={styles.section}>
-      <TouchableOpacity
-        style={styles.header}
-        onPress={() => setOpen((o) => !o)}
-      >
+      <TouchableOpacity style={styles.header} onPress={() => setOpen((o) => !o)}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.chevron}>{open ? "▲" : "▼"}</Text>
       </TouchableOpacity>

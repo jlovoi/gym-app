@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "@/constants/theme";
 
 type ClassItem = {
@@ -38,8 +30,20 @@ const INITIAL_CLASSES: ClassItem[] = [
     capacity: 14,
     userJoined: false,
     attendees: [
-      "Alex", "Jordan", "Sam", "Taylor", "Casey", "Morgan", "Riley",
-      "Jamie", "Drew", "Avery", "Quinn", "Reese", "Skyler", "Rowan",
+      "Alex",
+      "Jordan",
+      "Sam",
+      "Taylor",
+      "Casey",
+      "Morgan",
+      "Riley",
+      "Jamie",
+      "Drew",
+      "Avery",
+      "Quinn",
+      "Reese",
+      "Skyler",
+      "Rowan",
     ],
   },
   {
@@ -70,7 +74,7 @@ const INITIAL_CLASSES: ClassItem[] = [
     attendees: ["Alex", "Jordan", "Sam", "Taylor", "Casey"],
   },
   {
-    id: "c5",
+    id: "c6",
     time: "5:15 PM",
     name: "Crossfit",
     instructor: "Coach Alex",
@@ -79,7 +83,7 @@ const INITIAL_CLASSES: ClassItem[] = [
     attendees: ["Alex", "Jordan", "Sam", "Taylor", "Casey"],
   },
   {
-    id: "c5",
+    id: "c7",
     time: "6:30 PM",
     name: "Crossfit",
     instructor: "Coach Alex",
@@ -89,15 +93,7 @@ const INITIAL_CLASSES: ClassItem[] = [
   },
 ];
 
-const days = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export default function Classes() {
   const [classes, setClasses] = useState<ClassItem[]>(INITIAL_CLASSES);
@@ -115,7 +111,7 @@ export default function Classes() {
         }
         if (c.attendees.length >= c.capacity) return c;
         return { ...c, userJoined: true, attendees: [...c.attendees, "You"] };
-      })
+      }),
     );
   }
 
@@ -165,10 +161,7 @@ export default function Classes() {
                 </TouchableOpacity>
 
                 {item.userJoined ? (
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => toggleJoin(item.id)}
-                  >
+                  <TouchableOpacity style={styles.cancelButton} onPress={() => toggleJoin(item.id)}>
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </TouchableOpacity>
                 ) : full ? (
@@ -176,10 +169,7 @@ export default function Classes() {
                     <Text style={styles.fullButtonText}>Full</Text>
                   </View>
                 ) : (
-                  <TouchableOpacity
-                    style={styles.joinButton}
-                    onPress={() => toggleJoin(item.id)}
-                  >
+                  <TouchableOpacity style={styles.joinButton} onPress={() => toggleJoin(item.id)}>
                     <Text style={styles.joinButtonText}>Sign Up</Text>
                   </TouchableOpacity>
                 )}

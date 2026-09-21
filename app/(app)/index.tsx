@@ -1,13 +1,8 @@
 import CollapsibleSection from "@/components/CollapsibleSection";
 import { colors } from "@/constants/theme";
 import { useRouter } from "expo-router";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { wodTypes, formatWodTitle, wodDescription } from "./utils/wods";
 
 const ANNOUNCEMENTS = [
   {
@@ -22,28 +17,26 @@ const ANNOUNCEMENTS = [
   },
 ];
 
-const TODAYS_WORKOUT = {
-  title: "Full Body Strength",
-  description:
-    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-  exercises: [
-    "3x10 Barbell Squat",
-    "3x8 Bench Press",
-    "3x10 Romanian Deadlift",
-    "3x12 Dumbbell Row",
-    "3x15 Overhead Press",
-  ],
-};
-
-const days = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+const TODAYS_WOD = [
+  {
+    title: null,
+    type: wodTypes.EMOM,
+    time: 10,
+    interval: 2,
+    description: null,
+    exercises: ["EVEN MINUTE: 10 Push-ups", "ODD MINUTE: 15 Air Squats"],
+  },
+  {
+    title: null,
+    type: wodTypes.EMOM,
+    time: 10,
+    interval: 2,
+    description: null,
+    exercises: ["EVEN MINUTE: 10 Push-ups", "ODD MINUTE: 15 Air Squats"],
+  },
 ];
+
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export default function Home() {
   const router = useRouter();
@@ -57,9 +50,7 @@ export default function Home() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.heading}>
-          {`${days[date.getDay()]}, ${date.getMonth() + 1}/${date.getDate()}`}
-        </Text>
+        <Text style={styles.heading}>{`${days[date.getDay()]}, ${date.getMonth() + 1}/${date.getDate()}`}</Text>
         <TouchableOpacity onPress={handleSignOut}>
           <Text style={styles.signOut}>Sign out</Text>
         </TouchableOpacity>
@@ -75,18 +66,26 @@ export default function Home() {
       </CollapsibleSection>
 
       <CollapsibleSection title="Today's Workout">
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{TODAYS_WORKOUT.title}</Text>
-          <Text style={styles.cardBody}>{TODAYS_WORKOUT.description}</Text>
-          <View style={styles.exerciseList}>
-            {TODAYS_WORKOUT.exercises.map((exercise) => (
-              <View key={exercise} style={styles.exerciseRow}>
-                <View style={styles.bullet} />
-                <Text style={styles.exerciseText}>{exercise}</Text>
+        {TODAYS_WOD.map((wod, index) => (
+          <View style={styles.card} key={index}>
+            <View style={styles.titleRow}>
+              <View style={styles.indexBadge}>
+                <Text style={styles.indexBadgeText}>{index + 1}</Text>
               </View>
-            ))}
+              <Text style={styles.workoutTitle}>{wod.title || formatWodTitle(wod.type, wod.time, wod.interval)}</Text>
+            </View>
+            {wod.title && <Text style={styles.cardSubtitle}>{formatWodTitle(wod.type, wod.time, wod.interval)}</Text>}
+            <Text style={styles.cardBody}>{wod.description || wodDescription[wod.type](wod.time, wod.interval)}</Text>
+            <View style={styles.exerciseList}>
+              {wod.exercises.map((exercise) => (
+                <View key={exercise} style={styles.exerciseRow}>
+                  <View style={styles.bullet} />
+                  <Text style={styles.exerciseText}>{exercise}</Text>
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
+        ))}
       </CollapsibleSection>
     </ScrollView>
   );
@@ -124,9 +123,40 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 20,
+    fontWeight: "800",
     color: colors.text,
+    marginBottom: 6,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  indexBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.accent2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  indexBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.background,
+  },
+  workoutTitle: {
+    flexShrink: 1,
+    fontSize: 20,
+    fontWeight: "800",
+    color: colors.text,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.muted,
     marginBottom: 6,
   },
   cardBody: {
