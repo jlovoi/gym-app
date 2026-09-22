@@ -1,5 +1,5 @@
-### Monorepo style
+# Monorepo style
 
-## Frontend utilizing Expo, React Native, Expo + Next.js
+### Frontend utilizing Expo, React Native, Expo + Next.js
 
-## Backend utilizing Axum
+### Backend utilizing Axum
