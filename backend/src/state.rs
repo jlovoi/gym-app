@@ -1,13 +1,11 @@
-use std::sync::Arc;
-
 use sqlx::PgPool;
 
-use crate::{config::AppConfig, jwt::Jwt};
+use crate::auth::middleware::JwksCache;
+use crate::config::Config;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: PgPool,
-    pub jwt: Jwt,
-    pub http: reqwest::Client,
-    pub config: Arc<AppConfig>,
+    pub config: Config,
+    pub jwks: JwksCache,
 }

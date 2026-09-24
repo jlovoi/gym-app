@@ -1,49 +1,52 @@
-use std::{net::SocketAddr, sync::Arc};
-
-use gym_app_backend::{app, config::AppConfig, db, jwt::Jwt, state::AppState};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use gym_backend::auth::middleware::JwksCache;
+use gym_backend::config::Config;
+use gym_backend::state::AppState;
+use sqlx::postgres::PgPoolOptions;
+use tokio::net::TcpListener;
+use tower_http::cors::CorsLayer;
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
 
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "gym_app_backend=debug,tower_http=debug".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
         .init();
 
-    let config = AppConfig::from_env();
+    let config = Config::from_env();
 
-    let db = db::connect(&config.database_url)
+    let db = PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&config.database_url)
         .await
-        .expect("failed to connect to database / run migrations");
+        .expect("Failed to connect to database");
 
-    let jwt = Jwt::new(
-        &config.jwt_secret,
-        config.access_token_ttl_secs,
-        config.refresh_token_ttl_secs,
-    );
+    sqlx::migrate!("./migrations")
+        .run(&db)
+        .await
+        .expect("Failed to run migrations");
 
-    let http = reqwest::Client::builder()
-        // Following redirects on OAuth token/userinfo requests opens the door to SSRF.
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("failed to build http client");
+    tracing::info!("Migrations applied successfully");
+
+    let jwks = JwksCache::new(config.clerk_jwks_url.clone());
+    jwks.refresh().await.expect("Failed to fetch JWKS keys");
+    tracing::info!("JWKS keys loaded");
 
     let state = AppState {
         db,
-        jwt,
-        http,
-        config: Arc::new(config),
+        config: config.clone(),
+        jwks,
     };
 
-    let app = app(state);
+    let app = gym_backend::routes::router(state)
+        .layer(TraceLayer::new_for_http())
+        .layer(CorsLayer::permissive());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    tracing::info!("listening on {addr}");
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let addr = format!("{}:{}", config.host, config.port);
+    let listener = TcpListener::bind(&addr).await.expect("Failed to bind");
+    tracing::info!("Server listening on {}", addr);
+
+    axum::serve(listener, app).await.expect("Server error");
 }

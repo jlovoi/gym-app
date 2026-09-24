@@ -1,51 +1,56 @@
-use axum::{
-    http::StatusCode,
-    response::{IntoResponse, Response},
-    Json,
-};
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use axum::Json;
 use serde_json::json;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
-    #[error("unauthorized")]
+    #[error("Not found")]
+    NotFound,
+
+    #[error("Unauthorized")]
     Unauthorized,
-    #[error("{0}")]
+
+    #[error("Forbidden")]
+    Forbidden,
+
+    #[error("Active membership required")]
+    PaymentRequired,
+
+    #[error("Bad request: {0}")]
     BadRequest(String),
-    #[error("{0} oauth is not configured on this server")]
-    ProviderNotConfigured(String),
-    #[error("{0}")]
-    Upstream(String),
-    #[error(transparent)]
+
+    #[error("Conflict: {0}")]
+    Conflict(String),
+
+    #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
-    #[error(transparent)]
-    Jwt(#[from] jsonwebtoken::errors::Error),
-    #[error(transparent)]
-    Http(#[from] reqwest::Error),
+
+    #[error("Internal error: {0}")]
+    Internal(String),
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match &self {
+            AppError::NotFound => (StatusCode::NOT_FOUND, self.to_string()),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, self.to_string()),
+            AppError::Forbidden => (StatusCode::FORBIDDEN, self.to_string()),
+            AppError::PaymentRequired => (StatusCode::PAYMENT_REQUIRED, self.to_string()),
             AppError::BadRequest(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::ProviderNotConfigured(_) => (StatusCode::NOT_IMPLEMENTED, self.to_string()),
-            AppError::Upstream(_) => (StatusCode::BAD_GATEWAY, self.to_string()),
-            AppError::Database(err) => {
-                tracing::error!(error = %err, "database error");
+            AppError::Conflict(_) => (StatusCode::CONFLICT, self.to_string()),
+            AppError::Database(e) => {
+                tracing::error!("Database error: {:?}", e);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "internal server error".to_string(),
+                    "Internal server error".into(),
                 )
             }
-            AppError::Jwt(err) => {
-                tracing::warn!(error = %err, "jwt error");
-                (StatusCode::UNAUTHORIZED, "invalid token".to_string())
-            }
-            AppError::Http(err) => {
-                tracing::error!(error = %err, "http client error");
+            AppError::Internal(e) => {
+                tracing::error!("Internal error: {}", e);
                 (
-                    StatusCode::BAD_GATEWAY,
-                    "upstream request failed".to_string(),
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Internal server error".into(),
                 )
             }
         };

@@ -1,99 +1,56 @@
 use std::env;
 
-#[derive(Debug, Clone)]
-pub struct GoogleConfig {
-    pub client_id: String,
-    pub client_secret: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct AppleConfig {
-    pub client_id: String, // Services ID, e.g. com.example.gymapp.web
-    pub team_id: String,
-    pub key_id: String,
-    pub private_key_pem: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct AppConfig {
+#[derive(Clone, Debug)]
+pub struct Config {
     pub database_url: String,
-    pub jwt_secret: Vec<u8>,
-    pub access_token_ttl_secs: i64,
-    pub refresh_token_ttl_secs: i64,
-    pub backend_base_url: String,
-    pub frontend_redirect_url: String,
-    pub google: Option<GoogleConfig>,
-    pub apple: Option<AppleConfig>,
+    pub clerk_jwks_url: String,
+    pub clerk_webhook_secret: String,
+    pub stripe_secret_key: String,
+    pub stripe_webhook_secret: String,
+    pub stripe_price_unlimited: String,
+    pub stripe_price_punchcard: String,
+    pub stripe_price_dropin: String,
+    pub clerk_secret_key: String,
+    pub clerk_publishable_key: String,
+    pub host: String,
+    pub port: u16,
 }
 
-impl AppConfig {
+impl Config {
     pub fn from_env() -> Self {
-        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let jwt_secret = env::var("JWT_SECRET")
-            .expect("JWT_SECRET must be set")
-            .into_bytes();
-
-        let access_token_ttl_secs = env::var("ACCESS_TOKEN_TTL_SECONDS")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(900);
-        let refresh_token_ttl_secs = env::var("REFRESH_TOKEN_TTL_SECONDS")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(60 * 60 * 24 * 30);
-
-        let backend_base_url = env::var("BACKEND_BASE_URL")
-            .unwrap_or_else(|_| "http://localhost:3000".to_string());
-        let frontend_redirect_url = env::var("FRONTEND_REDIRECT_URL")
-            .unwrap_or_else(|_| "http://localhost:8081/auth/callback".to_string());
-
-        let google = match (
-            env::var("GOOGLE_CLIENT_ID"),
-            env::var("GOOGLE_CLIENT_SECRET"),
-        ) {
-            (Ok(client_id), Ok(client_secret)) => Some(GoogleConfig {
-                client_id,
-                client_secret,
-            }),
-            _ => {
-                tracing::warn!(
-                    "GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET not set; /auth/google routes will return 501"
-                );
-                None
-            }
-        };
-
-        let apple = match (
-            env::var("APPLE_CLIENT_ID"),
-            env::var("APPLE_TEAM_ID"),
-            env::var("APPLE_KEY_ID"),
-            env::var("APPLE_PRIVATE_KEY"),
-        ) {
-            (Ok(client_id), Ok(team_id), Ok(key_id), Ok(private_key_pem)) => Some(AppleConfig {
-                client_id,
-                team_id,
-                key_id,
-                // .env files can't hold real newlines in a single value, so the key is
-                // commonly stored with literal "\n" sequences that need unescaping here.
-                private_key_pem: private_key_pem.replace("\\n", "\n"),
-            }),
-            _ => {
-                tracing::warn!(
-                    "APPLE_CLIENT_ID/APPLE_TEAM_ID/APPLE_KEY_ID/APPLE_PRIVATE_KEY not set; /auth/apple routes will return 501"
-                );
-                None
-            }
-        };
-
         Self {
-            database_url,
-            jwt_secret,
-            access_token_ttl_secs,
-            refresh_token_ttl_secs,
-            backend_base_url,
-            frontend_redirect_url,
-            google,
-            apple,
+            database_url: env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
+            clerk_jwks_url: env::var("CLERK_JWKS_URL").expect("CLERK_JWKS_URL must be set"),
+            clerk_webhook_secret: env::var("CLERK_WEBHOOK_SECRET")
+                .expect("CLERK_WEBHOOK_SECRET must be set"),
+            stripe_secret_key: env::var("STRIPE_SECRET_KEY")
+                .expect("STRIPE_SECRET_KEY must be set"),
+            stripe_webhook_secret: env::var("STRIPE_WEBHOOK_SECRET")
+                .expect("STRIPE_WEBHOOK_SECRET must be set"),
+            stripe_price_unlimited: env::var("STRIPE_PRICE_UNLIMITED")
+                .expect("STRIPE_PRICE_UNLIMITED must be set"),
+            stripe_price_punchcard: env::var("STRIPE_PRICE_PUNCHCARD")
+                .expect("STRIPE_PRICE_PUNCHCARD must be set"),
+            stripe_price_dropin: env::var("STRIPE_PRICE_DROPIN")
+                .expect("STRIPE_PRICE_DROPIN must be set"),
+            clerk_secret_key: env::var("CLERK_SECRET_KEY")
+                .expect("CLERK_SECRET_KEY must be set"),
+            clerk_publishable_key: env::var("CLERK_PUBLISHABLE_KEY")
+                .expect("CLERK_PUBLISHABLE_KEY must be set"),
+            host: env::var("HOST").unwrap_or_else(|_| "0.0.0.0".into()),
+            port: env::var("PORT")
+                .unwrap_or_else(|_| "3000".into())
+                .parse()
+                .expect("PORT must be a number"),
+        }
+    }
+
+    pub fn stripe_price_for_plan(&self, plan_type: &str) -> Option<&str> {
+        match plan_type {
+            "unlimited" => Some(&self.stripe_price_unlimited),
+            "punchcard" => Some(&self.stripe_price_punchcard),
+            "dropin" => Some(&self.stripe_price_dropin),
+            _ => None,
         }
     }
 }
