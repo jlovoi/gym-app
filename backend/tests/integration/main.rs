@@ -1,8 +1,5 @@
 mod common;
 
-mod admin;
-mod auth;
-mod classes;
+// Re-enable once /admin routes are mounted again with the new auth.
+// mod admin;
 mod health;
-mod logs;
-mod workouts;

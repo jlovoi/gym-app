@@ -1,4 +1,3 @@
-use gym_backend::auth::middleware::JwksCache;
 use gym_backend::config::Config;
 use gym_backend::state::AppState;
 use sqlx::postgres::PgPoolOptions;
@@ -30,14 +29,9 @@ async fn main() {
 
     tracing::info!("Migrations applied successfully");
 
-    let jwks = JwksCache::new(config.clerk_jwks_url.clone());
-    jwks.refresh().await.expect("Failed to fetch JWKS keys");
-    tracing::info!("JWKS keys loaded");
-
     let state = AppState {
         db,
         config: config.clone(),
-        jwks,
     };
 
     let app = gym_backend::routes::router(state)
