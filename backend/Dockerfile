@@ -7,11 +7,6 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
-# async-stripe "full" needs >1GB for a single rustc invocation in release mode.
-# Serialize builds to minimize peak memory, and increase codegen-units to
-# split each crate into smaller chunks (trades runtime perf for lower RAM).
-# ENV CARGO_BUILD_JOBS=1
-# ENV CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application

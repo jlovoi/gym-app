@@ -29,10 +29,7 @@ async fn main() {
 
     tracing::info!("Migrations applied successfully");
 
-    let state = AppState {
-        db,
-        config: config.clone(),
-    };
+    let state = AppState::new(db, config.clone());
 
     let app = gym_backend::routes::router(state)
         .layer(TraceLayer::new_for_http())

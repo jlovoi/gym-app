@@ -14,7 +14,8 @@ use testcontainers_modules::postgres::Postgres;
 use tower::ServiceExt;
 use uuid::Uuid;
 
-use gym_backend::config::Config;
+use gym_backend::auth::jwt::Jwt;
+use gym_backend::config::{AuthConfig, Config, GoogleConfig};
 use gym_backend::state::AppState;
 
 // ── Shared Postgres container ───────────────────────────────────────────
@@ -39,13 +40,20 @@ async fn get_container() -> &'static testcontainers::ContainerAsync<Postgres> {
 fn test_config(database_url: String) -> Config {
     Config {
         database_url,
-        stripe_secret_key: "sk_test_fake".to_string(),
-        stripe_webhook_secret: "whsec_test".to_string(),
-        stripe_price_unlimited: "price_unlimited_test".to_string(),
-        stripe_price_punchcard: "price_punchcard_test".to_string(),
-        stripe_price_dropin: "price_dropin_test".to_string(),
         host: "127.0.0.1".to_string(),
         port: 0,
+        public_url: "http://localhost:3000".to_string(),
+        auth: AuthConfig {
+            jwt_secret: "test-secret-test-secret-test-secret".to_string(),
+            access_token_ttl_secs: 900,
+            refresh_token_ttl_secs: 3600,
+            allowed_redirects: vec!["gymfrontend://auth/callback".to_string()],
+            google: Some(GoogleConfig {
+                client_id: "google-client-id".to_string(),
+                client_secret: "google-client-secret".to_string(),
+            }),
+            apple: None,
+        },
     }
 }
 
@@ -54,6 +62,7 @@ fn test_config(database_url: String) -> Config {
 pub struct TestApp {
     pub router: Router,
     pub db: PgPool,
+    pub jwt: Jwt,
 }
 
 impl TestApp {
@@ -83,16 +92,19 @@ impl TestApp {
             .expect("Failed to run migrations");
 
         let config = test_config(test_url);
-        let state = AppState {
-            db: db.clone(),
-            config,
-        };
+        let state = AppState::new(db.clone(), config);
+        let jwt = state.jwt.clone();
         let router = gym_backend::routes::router(state);
 
-        Self { router, db }
+        Self { router, db, jwt }
     }
 
     // ── HTTP helpers ────────────────────────────────────────────────────
+
+    /// Sends a request as-is and returns the raw response (for redirects and headers).
+    pub async fn raw(&self, req: Request<Body>) -> axum::http::Response<Body> {
+        self.router.clone().oneshot(req).await.unwrap()
+    }
 
     pub async fn get(&self, uri: &str, token: Option<&str>) -> TestResponse {
         let mut builder = Request::builder().method(Method::GET).uri(uri);
@@ -167,35 +179,36 @@ impl TestApp {
 
     // ── Seed helpers ────────────────────────────────────────────────────
 
-    pub async fn seed_user(&self, id: &str, role: &str, is_active: bool) {
-        sqlx::query("INSERT INTO users (id, role, is_active) VALUES ($1, $2::user_role, $3)")
-            .bind(id)
-            .bind(role)
-            .bind(is_active)
-            .execute(&self.db)
-            .await
-            .expect("Failed to seed user");
+    pub async fn seed_user(&self, role: &str, is_active: bool) -> Uuid {
+        self.seed_user_with_name(role, is_active, None, None).await
     }
 
     pub async fn seed_user_with_name(
         &self,
-        id: &str,
         role: &str,
         is_active: bool,
         first_name: Option<&str>,
         last_name: Option<&str>,
-    ) {
-        sqlx::query(
-            "INSERT INTO users (id, role, is_active, first_name, last_name) VALUES ($1, $2::user_role, $3, $4, $5)",
+    ) -> Uuid {
+        sqlx::query_scalar(
+            "INSERT INTO users (role, is_active, first_name, last_name)
+             VALUES ($1::user_role, $2, $3, $4) RETURNING id",
         )
-        .bind(id)
         .bind(role)
         .bind(is_active)
         .bind(first_name)
         .bind(last_name)
-        .execute(&self.db)
+        .fetch_one(&self.db)
         .await
-        .expect("Failed to seed user with name");
+        .expect("Failed to seed user")
+    }
+
+    pub fn token_for(&self, user_id: Uuid) -> String {
+        self.jwt.issue_session(user_id).unwrap().access_token
+    }
+
+    pub fn refresh_token_for(&self, user_id: Uuid) -> String {
+        self.jwt.issue_session(user_id).unwrap().refresh_token
     }
 }
 

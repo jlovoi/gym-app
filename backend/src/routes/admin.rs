@@ -3,8 +3,9 @@ use axum::routing::{get, put};
 use axum::{Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
+use uuid::Uuid;
 
-use crate::auth::middleware::AdminUser;
+use crate::auth::extractors::AdminUser;
 use crate::db::users as users_db;
 use crate::error::AppError;
 use crate::state::AppState;
@@ -32,12 +33,12 @@ struct UpdateUserRequest {
 async fn update_user(
     _admin: AdminUser,
     State(state): State<AppState>,
-    Path(id): Path<String>,
+    Path(id): Path<Uuid>,
     Json(body): Json<UpdateUserRequest>,
 ) -> Result<Json<Value>, AppError> {
     let user = users_db::update(
         &state.db,
-        &id,
+        id,
         body.role.as_deref(),
         body.is_active,
     )
